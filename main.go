@@ -16,7 +16,7 @@ func main() {
 	if err := envconfig.Process("photon", &config); err != nil {
 		log.Fatalln(err)
 	}
-	var c chan photon.Measure
+	c := make(chan photon.Measure)
 	go photon.Subscribe(c, config.DeviceId, config.Token)
 	for {
 		m := <-c
