@@ -1,9 +1,12 @@
 package main
 
 import (
+	"encoding/json"
+	"github.com/grimborg/photon-climate-server/broadcaster"
 	"github.com/grimborg/photon-climate-server/photon"
 	"github.com/kelseyhightower/envconfig"
 	"log"
+	"net/http"
 )
 
 type Config struct {
@@ -18,8 +21,16 @@ func main() {
 	}
 	c := make(chan photon.Measure)
 	go photon.Subscribe(c, config.DeviceId, config.Token)
-	for {
-		m := <-c
-		log.Printf("received %+v\n", m)
-	}
+	bc := broadcaster.New()
+	http.Handle("/socket.io/", bc.Server)
+	go func() {
+		for {
+			m := <-c
+			s, _ := json.Marshal(m)
+			log.Printf("received %+v\n", m)
+			bc.Broadcast(string(s))
+		}
+	}()
+	log.Println("Listening at 8080")
+	log.Fatal(http.ListenAndServe(":8080", nil))
 }

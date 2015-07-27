@@ -10,14 +10,14 @@ import (
 )
 
 type Message struct {
-	Data        string    `json:data`
+	Data        string    `json:"data"`
 	PublishedAt time.Time `json:"published_at"`
 }
 
 type Measure struct {
-	Timestamp   time.Time `json:timestamp`
-	Temperature int64     `json:temperature`
-	Humidity    int64     `json:humidity`
+	Timestamp   time.Time `json:"timestamp"`
+	Temperature int64     `json:"temperature"`
+	Humidity    int64     `json:"humidity"`
 }
 
 func (m Message) Measure() Measure {
