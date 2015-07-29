@@ -7,6 +7,7 @@ import (
 	"github.com/grimborg/photon-climate-server/photon"
 	"github.com/grimborg/photon-climate-server/storage"
 	"github.com/kelseyhightower/envconfig"
+	"github.com/rs/cors"
 	"log"
 	"net/http"
 )
@@ -39,8 +40,9 @@ func main() {
 		fmt.Fprint(w, string(data))
 	}
 	bc := broadcaster.New()
-	http.Handle("/socket.io/", bc.Server)
-	http.HandleFunc("/history/", getHistory)
+	mux := http.NewServeMux()
+	mux.Handle("/socket.io/", bc.Server)
+	mux.HandleFunc("/history/", getHistory)
 	go func() {
 		for {
 			m := <-c
@@ -51,5 +53,8 @@ func main() {
 		}
 	}()
 	log.Println("Listening at 8080")
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	corsHandler := cors.New(cors.Options{
+		AllowCredentials: true,
+	})
+	log.Fatal(http.ListenAndServe(":8080", corsHandler.Handler(mux)))
 }
